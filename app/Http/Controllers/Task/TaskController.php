@@ -57,14 +57,16 @@ class TaskController extends Controller
     public function update(Request $request, Task $task)
     {
         $request->validate([
-            'name' => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $task->name = $request->name ?? $task->name;
+
+        if ($request->filled('name')) {
+            $task->name = $request->input('name');
+        }
 
         if ($request->hasFile('image')) {
-            // Delete old image
             if ($task->image && file_exists(public_path($task->image))) {
                 unlink(public_path($task->image));
             }
@@ -80,7 +82,6 @@ class TaskController extends Controller
 
         return redirect()->route('task.index');
     }
-
 
     public function destroy(Task $task)
     {

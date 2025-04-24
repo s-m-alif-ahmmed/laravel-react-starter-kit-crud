@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     Card,
     CardContent,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { FormEventHandler, useRef } from 'react';
 
@@ -55,11 +55,15 @@ export default function Create() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task Create" />
             <div className="m-5">
+                <Link className={(buttonVariants({ variant: 'default' }))} href={route('task.index')}>
+                    Task List
+                </Link>
+
                 <Card>
                     <CardHeader>
                         <CardTitle>Create Task</CardTitle>
                     </CardHeader>
-                    <form onSubmit={createTask}>
+                    <form onSubmit={createTask} encType="multipart/form-data">
                         <CardContent>
                             <div className="grid w-full items-center gap-4">
                                 <div className="flex flex-col space-y-1.5">

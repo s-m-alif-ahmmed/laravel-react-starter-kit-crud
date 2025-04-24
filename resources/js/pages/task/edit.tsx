@@ -1,18 +1,20 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import {
     Card,
     CardContent,
     CardFooter,
     CardHeader,
     CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { FormEventHandler, useRef } from 'react';
+import { type Task } from '@/types';
+import { toast } from 'sonner';
 
 type EditTaskForm = {
     name: string;
@@ -20,52 +22,48 @@ type EditTaskForm = {
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Task Edit',
-        href: '/task/edit',
-    },
+    { title: 'Task Edit', href: '/task/edit' },
 ];
-
-type Task = {
-    id: number;
-    name: string;
-    image: string | null;
-};
 
 export default function Edit({ task }: { task: Task }) {
     const taskName = useRef<HTMLInputElement>(null);
 
-    const { data, setData, errors, put, reset, processing } = useForm<EditTaskForm>({
-        name: task.name,
+    const { data, setData, errors, patch, reset, processing } = useForm<EditTaskForm>({
+        name: task.name ?? '',
         image: null,
     });
 
     const editTask: FormEventHandler = (e) => {
         e.preventDefault();
-        put(route('task.update', task.id), {
+
+        patch(route('task.update', task.id), {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                reset();
+                reset('image');
+                toast.success('Task updated successfully.');
             },
             onError: (errors) => {
                 if (errors.name) {
-                    reset('name');
                     taskName.current?.focus();
                 }
             }
         });
     };
 
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task Edit" />
             <div className="m-5">
+                <Link className={buttonVariants({ variant: 'default' })} href={route('task.index')}>
+                    Task List
+                </Link>
                 <Card>
                     <CardHeader>
                         <CardTitle>Edit Task</CardTitle>
                     </CardHeader>
-                    <form onSubmit={editTask}>
+                    <form onSubmit={editTask} encType="multipart/form-data">
                         <CardContent>
                             <div className="grid w-full items-center gap-4">
                                 <div className="flex flex-col space-y-1.5">

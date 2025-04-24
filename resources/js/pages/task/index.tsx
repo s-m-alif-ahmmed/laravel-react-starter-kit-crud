@@ -5,7 +5,6 @@ import { type Task} from '@/types';
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
@@ -13,8 +12,6 @@ import {
 } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from 'sonner';
-
-
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -37,11 +34,10 @@ export default function Index({ tasks }: {tasks: Task[]}) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task List" />
             <div className="m-5">
-                <Link className={buttonVariants({ variant: 'outline'})} href="/task/create">
+                <Link className={buttonVariants({ variant: 'outline' })} href={route('task.create')}>
                     Create
                 </Link>
                 <Table>
-                    <TableCaption>A list of your recent invoices.</TableCaption>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="">Name</TableHead>
@@ -55,10 +51,10 @@ export default function Index({ tasks }: {tasks: Task[]}) {
                                 <TableCell className="font-medium">{task.name}</TableCell>
                                 <TableCell>{task.image}</TableCell>
                                 <TableCell>
-                                    <Link className={buttonVariants({ variant: 'default'})} href={`/task/${task.id}/edit`}>
+                                    <Link className={buttonVariants({ variant: 'default' })} href={`/task/${task.id}/edit`}>
                                         Edit
                                     </Link>
-                                    <Button variant={'destructive'} className={'cursor-pointer, mx-2'} onClick={() => deleteTask(task.id) }>
+                                    <Button variant={'destructive'} className={'cursor-pointer, mx-2'} onClick={() => deleteTask(task.id)}>
                                         Delete
                                     </Button>
                                 </TableCell>
