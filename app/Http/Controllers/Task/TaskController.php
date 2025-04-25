@@ -11,8 +11,9 @@ class TaskController extends Controller
 {
     public function index()
     {
+        $tasks = Task::paginate(1);
         return Inertia::render('task/index',[
-            'tasks' => Task::all(),
+            'tasks' => $tasks,
         ]);
     }
 

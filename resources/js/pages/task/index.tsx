@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, Link } from '@inertiajs/react';
-import { type Task} from '@/types';
+import { type Task } from '@/types';
 import {
     Table,
     TableBody,
@@ -20,12 +20,11 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-
-export default function Index({ tasks }: {tasks: Task[]}) {
+export default function Index({ tasks }: { tasks: any }) {
 
     const deleteTask = (id: number) => {
-        if (confirm('Are you sure?')){
-            router.delete(route('task.destroy', {id}));
+        if (confirm('Are you sure?')) {
+            router.delete(route('task.destroy', { id }));
             toast.success('Task Delete successfully!');
         }
     };
@@ -46,10 +45,18 @@ export default function Index({ tasks }: {tasks: Task[]}) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {tasks.map((task) => (
+                        {tasks.data.map((task: Task) => (
                             <TableRow key={task.id}>
                                 <TableCell className="font-medium">{task.name}</TableCell>
-                                <TableCell>{task.image}</TableCell>
+                                <TableCell>
+                                    {task.image && (
+                                        <img
+                                            src={`/${task.image}`}
+                                            alt="Task"
+                                            className="w-32 h-auto rounded-md border"
+                                        />
+                                    )}
+                                </TableCell>
                                 <TableCell>
                                     <Link className={buttonVariants({ variant: 'default' })} href={`/task/${task.id}/edit`}>
                                         Edit
@@ -62,8 +69,22 @@ export default function Index({ tasks }: {tasks: Task[]}) {
                         ))}
                     </TableBody>
                 </Table>
+
+                <div className="flex justify-end items-end mt-4">
+                    <div className="flex space-x-2">
+                        {tasks.links.map((link: any) => (
+                            <Link
+                                key={link.label}
+                                href={link.url || '#'}
+                                className={`px-3 py-1 rounded-md ${link.active ? 'bg-blue-500 text-white' : 'bg-gray-100 text-black'}`}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+
             </div>
         </AppLayout>
     );
 }
-

@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Card,
     CardContent,
@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import InputError from '@/components/input-error';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { FormEventHandler, useRef } from 'react';
+import { FormEventHandler, useRef, useState } from 'react';
 import { type Task } from '@/types';
 import { toast } from 'sonner';
 
@@ -28,29 +28,39 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Edit({ task }: { task: Task }) {
     const taskName = useRef<HTMLInputElement>(null);
 
-    const { data, setData, errors, patch, reset, processing } = useForm<EditTaskForm>({
+    const [data, setData] = useState<EditTaskForm>({
         name: task.name ?? '',
         image: null,
     });
 
+    const [errors, setErrors] = useState<{ name?: string; image?: string }>({});
+    const [processing, setProcessing] = useState(false);
+
     const editTask: FormEventHandler = (e) => {
         e.preventDefault();
+        setProcessing(true);
+        setErrors({});
 
-        patch(route('task.update', task.id), {
-            forceFormData: true,
+        const formData = new FormData();
+        formData.append('name', data.name);
+        if (data.image) {
+            formData.append('image', data.image);
+        }
+        formData.append('_method', 'PUT');
+
+        router.post(route('task.update', task.id), formData, {
             preserveScroll: true,
             onSuccess: () => {
-                reset('image');
+                setData({ ...data, image: null });
                 toast.success('Task updated successfully.');
             },
-            onError: (errors) => {
-                if (errors.name) {
-                    taskName.current?.focus();
-                }
-            }
+            onError: (err) => {
+                setErrors(err);
+                if (err.name) taskName.current?.focus();
+            },
+            onFinish: () => setProcessing(false),
         });
     };
-
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -72,7 +82,7 @@ export default function Edit({ task }: { task: Task }) {
                                         id="name"
                                         ref={taskName}
                                         value={data.name}
-                                        onChange={(e) => setData('name', e.target.value)}
+                                        onChange={(e) => setData({ ...data, name: e.target.value })}
                                         placeholder="Name of your task"
                                         disabled={processing}
                                     />
@@ -95,7 +105,9 @@ export default function Edit({ task }: { task: Task }) {
                                     <Input
                                         id="image"
                                         type="file"
-                                        onChange={(e) => setData('image', e.target.files?.[0] ?? null)}
+                                        onChange={(e) =>
+                                            setData({ ...data, image: e.target.files?.[0] ?? null })
+                                        }
                                         disabled={processing}
                                     />
                                     <InputError message={errors.image} />
@@ -103,7 +115,7 @@ export default function Edit({ task }: { task: Task }) {
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-between mt-5">
-                            <Button type="button" variant="outline" onClick={() => reset()}>
+                            <Button type="button" variant="outline" onClick={() => setData({ name: task.name, image: null })}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>
