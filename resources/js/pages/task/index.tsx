@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, PaginatedTasks } from '@/types';
 import { Head, router, Link } from '@inertiajs/react';
 import { type Task } from '@/types';
 import {
@@ -12,6 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from 'sonner';
+import Pagination from '@/components/Pagination';
+import PerPageSelect from '@/components/PerPageSelect';
+import SearchInput from '@/components/SearchInput';
+
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -20,12 +24,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Index({ tasks }: { tasks: any }) {
+export default function Index({ tasks }: { tasks: PaginatedTasks }) {
 
     const deleteTask = (id: number) => {
         if (confirm('Are you sure?')) {
-            router.delete(route('task.destroy', { id }));
-            toast.success('Task Delete successfully!');
+            router.delete(route('task.destroy', { id }), {
+                onSuccess: () => {
+                    toast.success('Task deleted successfully!');
+                },
+                onError: () => {
+                    toast.error('Failed to delete the task.');
+                }
+            });
+
         }
     };
 
@@ -36,6 +47,17 @@ export default function Index({ tasks }: { tasks: any }) {
                 <Link className={buttonVariants({ variant: 'outline' })} href={route('task.create')}>
                     Create
                 </Link>
+
+                <PerPageSelect current={tasks.per_page} routeUrl="/task" />
+
+                <SearchInput
+                    placeholder="Search tasks..."
+                    model="search"
+                    routeUrl="/task"
+                    defaultValue={new URLSearchParams(window.location.search).get('search') ?? ''}
+                />
+
+
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -51,17 +73,18 @@ export default function Index({ tasks }: { tasks: any }) {
                                 <TableCell>
                                     {task.image && (
                                         <img
-                                            src={`/${task.image}`}
+                                            src={task.image ? `/${task.image}` : '/default.png'}
                                             alt="Task"
                                             className="w-32 h-auto rounded-md border"
                                         />
+
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <Link className={buttonVariants({ variant: 'default' })} href={`/task/${task.id}/edit`}>
+                                    <Link className={`${buttonVariants({ variant: 'default' })} mx-1`} href={`/task/${task.id}/edit`}>
                                         Edit
                                     </Link>
-                                    <Button variant={'destructive'} className={'cursor-pointer, mx-2'} onClick={() => deleteTask(task.id)}>
+                                    <Button variant={'destructive'} className="cursor-pointer mx-1" onClick={() => deleteTask(task.id)}>
                                         Delete
                                     </Button>
                                 </TableCell>
@@ -70,19 +93,7 @@ export default function Index({ tasks }: { tasks: any }) {
                     </TableBody>
                 </Table>
 
-                <div className="flex justify-end items-end mt-4">
-                    <div className="flex space-x-2">
-                        {tasks.links.map((link: any) => (
-                            <Link
-                                key={link.label}
-                                href={link.url || '#'}
-                                className={`px-3 py-1 rounded-md ${link.active ? 'bg-blue-500 text-white' : 'bg-gray-100 text-black'}`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </div>
-                </div>
+                <Pagination links={tasks.links} />
 
             </div>
         </AppLayout>

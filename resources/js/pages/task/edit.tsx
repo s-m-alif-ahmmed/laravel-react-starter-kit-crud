@@ -115,9 +115,6 @@ export default function Edit({ task }: { task: Task }) {
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-between mt-5">
-                            <Button type="button" variant="outline" onClick={() => setData({ name: task.name, image: null })}>
-                                Cancel
-                            </Button>
                             <Button type="submit" disabled={processing}>
                                 Update
                             </Button>

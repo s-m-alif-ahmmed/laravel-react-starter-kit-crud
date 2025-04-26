@@ -49,3 +49,15 @@ export interface Task {
     created_at: string;
     updated_at: string;
 }
+
+interface PaginatedTasks {
+    data: Task[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+}

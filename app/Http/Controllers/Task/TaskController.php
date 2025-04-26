@@ -9,13 +9,24 @@ use Inertia\Inertia;
 
 class TaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::paginate(1);
-        return Inertia::render('task/index',[
+        $perPage = $request->integer('per_page', 10);
+        $search = $request->string('search');
+
+        $query = Task::query();
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $tasks = $query->paginate($perPage)->appends($request->query());
+
+        return Inertia::render('task/index', [
             'tasks' => $tasks,
         ]);
     }
+
 
     public function create()
     {
@@ -39,13 +50,6 @@ class TaskController extends Controller
         $task->save();
 
         return redirect()->route('task.index')->with('success', 'Task created successfully!');
-    }
-
-    public function show(Task $task)
-    {
-        return Inertia::render('task/show', [
-            'task' => $task,
-        ]);
     }
 
     public function edit(Task $task)
