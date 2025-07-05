@@ -2,100 +2,117 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, PaginatedTasks } from '@/types';
 import { Head, router, Link } from '@inertiajs/react';
 import { type Task } from '@/types';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { toast } from 'sonner';
-import Pagination from '@/components/Pagination';
-import PerPageSelect from '@/components/PerPageSelect';
-import SearchInput from '@/components/SearchInput';
-
+import Table from '@/components/Table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Task List',
-        href: '/task',
+        href: '/task'
     },
 ];
+interface Props {
+    tasks: PaginatedTasks<Task>;
+    filters: {
+        search: string;
+        per_page: number;
+    };
+}
 
-export default function Index({ tasks }: { tasks: PaginatedTasks }) {
+const columns = [
+    { label: 'Name', key: 'name', sortable: true },
+    { label: 'Image', key: 'image' },
+    { label: 'Actions', key: 'actions' },
+];
 
+export default function Index({ tasks, filters }: Props) {
     const deleteTask = (id: number) => {
         if (confirm('Are you sure?')) {
             router.delete(route('task.destroy', { id }), {
-                onSuccess: () => {
-                    toast.success('Task deleted successfully!');
-                },
-                onError: () => {
-                    toast.error('Failed to delete the task.');
-                }
+                onSuccess: () => toast.success('Task deleted successfully!'),
+                onError: () => toast.error('Failed to delete the task.'),
             });
-
         }
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={[{ title: 'Task List', href: '/task' }]}>
             <Head title="Task List" />
+
             <div className="m-5">
-                <Link className={buttonVariants({ variant: 'outline' })} href={route('task.create')}>
+                <Link
+                    className="inline-block mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    href={route('task.create')}
+                >
                     Create
                 </Link>
 
-                <PerPageSelect current={tasks.per_page} routeUrl="/task" />
+                <Table<Task>
+                    data={tasks.data}
+                    total={tasks.total}
+                    currentPage={tasks.current_page}
+                    rowsPerPage={tasks.per_page}
+                    columns={columns}
+                    searchableKeys={['name']}
+                    renderCell={(key, value, row) => {
+                        if (key === 'image') {
+                            return value ? (
+                                <img
+                                    src={`/${value}`}
+                                    alt="Task"
+                                    className="w-20 h-auto rounded border"
+                                />
+                            ) : (
+                                <span>No image</span>
+                            );
+                        }
 
-                <SearchInput
-                    placeholder="Search tasks..."
-                    model="search"
-                    routeUrl="/task"
-                    defaultValue={new URLSearchParams(window.location.search).get('search') ?? ''}
-                />
-
-
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="">Name</TableHead>
-                            <TableHead>Image</TableHead>
-                            <TableHead>Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {tasks.data.map((task: Task) => (
-                            <TableRow key={task.id}>
-                                <TableCell className="font-medium">{task.name}</TableCell>
-                                <TableCell>
-                                    {task.image && (
-                                        <img
-                                            src={task.image ? `/${task.image}` : '/default.png'}
-                                            alt="Task"
-                                            className="w-32 h-auto rounded-md border"
-                                        />
-
-                                    )}
-                                </TableCell>
-                                <TableCell>
-                                    <Link className={`${buttonVariants({ variant: 'default' })} mx-1`} href={`/task/${task.id}/edit`}>
+                        if (key === 'actions') {
+                            return (
+                                <div className="flex gap-2">
+                                    <Link
+                                        className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                                        href={`/task/${row.id}/edit`}
+                                    >
                                         Edit
                                     </Link>
-                                    <Button variant={'destructive'} className="cursor-pointer mx-1" onClick={() => deleteTask(task.id)}>
+                                    <button
+                                        className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                        onClick={() => deleteTask(row.id)}
+                                    >
                                         Delete
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                    </button>
+                                </div>
+                            );
+                        }
 
-                <Pagination links={tasks.links} />
-
+                        return value;
+                    }}
+                    onPageChange={(page) => {
+                        router.get(route('task.index'), {
+                            page,
+                            per_page: tasks.per_page,
+                            search: filters.search,
+                        }, { preserveState: true, replace: true });
+                    }}
+                    onPerPageChange={(perPage) => {
+                        router.get(route('task.index'), {
+                            page: 1,
+                            per_page: perPage,
+                            search: filters.search,
+                        }, { preserveState: true, replace: true });
+                    }}
+                    onSearchChange={(search) => {
+                        router.get(route('task.index'), {
+                            page: 1,
+                            per_page: tasks.per_page,
+                            search,
+                        }, { preserveState: true, replace: true });
+                    }}
+                    searchValue={filters.search}
+                />
             </div>
         </AppLayout>
     );
 }
+

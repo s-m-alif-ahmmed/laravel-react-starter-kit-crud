@@ -11,8 +11,8 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = $request->integer('per_page', 10);
         $search = $request->string('search');
+        $perPage = $request->integer('per_page', 10);
 
         $query = Task::query();
 
@@ -24,9 +24,12 @@ class TaskController extends Controller
 
         return Inertia::render('task/index', [
             'tasks' => $tasks,
+            'filters' => [
+                'search' => $search,
+                'per_page' => $perPage,
+            ],
         ]);
     }
-
 
     public function create()
     {
