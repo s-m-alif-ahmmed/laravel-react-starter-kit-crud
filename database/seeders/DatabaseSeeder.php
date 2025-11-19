@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
         // Clear existing data
+        DB::table('users')->truncate();
         DB::table('tasks')->truncate();
 
         // Re-enable foreign key checks
@@ -34,6 +35,7 @@ class DatabaseSeeder extends Seeder
 
         // Call seeders
         $this->call([
+            UserSeeder::class,
             TaskSeeder::class,
         ]);
 
