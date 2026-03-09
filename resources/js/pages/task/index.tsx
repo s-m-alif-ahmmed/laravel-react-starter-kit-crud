@@ -12,7 +12,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 interface Props {
-    tasks: PaginatedTasks<Task>;
+    tasks: PaginatedTasks;
     filters: {
         search: string;
         per_page: number;

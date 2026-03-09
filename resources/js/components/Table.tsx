@@ -26,23 +26,24 @@ type TableProps<T> = {
 };
 
 function Table<T extends Record<string, any>>({
-                                                  data,
-                                                  total,
-                                                  currentPage,
-                                                  rowsPerPage,
-                                                  columns,
-                                                  searchableKeys = [],
-                                                  onPageChange,
-                                                  onPerPageChange,
-                                                  onSearchChange,
-                                                  searchValue = '',
-                                                  renderCell,
-                                                  className = '',
-                                                  tableClassName = '',
-                                              }: TableProps<T>) {
+    data,
+    total,
+    currentPage,
+    rowsPerPage,
+    columns,
+    searchableKeys = [],
+    onPageChange,
+    onPerPageChange,
+    onSearchChange,
+    searchValue = '',
+    renderCell,
+    className = '',
+    tableClassName = '',
+}: TableProps<T>) {
     const [searchInput, setSearchInput] = useState(searchValue);
     const [sortKey, setSortKey] = useState<keyof T | ''>('');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+    const debounceTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         setSearchInput(searchValue);
@@ -96,10 +97,12 @@ function Table<T extends Record<string, any>>({
                     onChange={(e) => {
                         const value = e.target.value;
                         setSearchInput(value);
-                        const delayDebounce = setTimeout(() => {
+                        if (debounceTimerRef.current) {
+                            clearTimeout(debounceTimerRef.current);
+                        }
+                        debounceTimerRef.current = setTimeout(() => {
                             onSearchChange?.(value);
                         }, 500);
-                        return () => clearTimeout(delayDebounce);
                     }}
                     className="border px-3 py-1 rounded w-full sm:w-auto"
                 />
@@ -113,43 +116,43 @@ function Table<T extends Record<string, any>>({
             <div className="overflow-x-auto">
                 <table className={`min-w-full border ${tableClassName}`}>
                     <thead>
-                    <tr className="bg-gray-100 text-left dark:bg-black">
-                        {columns.map((col) => (
-                            <th
-                                key={String(col.key)}
-                                className={`px-4 py-2 cursor-pointer select-none ${col.className ?? ''}`}
-                                onClick={() => col.sortable && handleSortChange(col.key)}
-                            >
-                                {col.label}
-                                {col.sortable && sortKey === col.key && (
-                                    <span className="ml-1 text-sm">
+                        <tr className="bg-gray-100 text-left dark:bg-black">
+                            {columns.map((col) => (
+                                <th
+                                    key={String(col.key)}
+                                    className={`px-4 py-2 cursor-pointer select-none ${col.className ?? ''}`}
+                                    onClick={() => col.sortable && handleSortChange(col.key)}
+                                >
+                                    {col.label}
+                                    {col.sortable && sortKey === col.key && (
+                                        <span className="ml-1 text-sm">
                                             {sortDirection === 'asc' ? '↑' : '↓'}
                                         </span>
-                                )}
-                            </th>
-                        ))}
-                    </tr>
+                                    )}
+                                </th>
+                            ))}
+                        </tr>
                     </thead>
                     <tbody>
-                    {data.length === 0 ? (
-                        <tr>
-                            <td colSpan={columns.length} className="text-center py-4 text-gray-500">
-                                No data found.
-                            </td>
-                        </tr>
-                    ) : (
-                        sortedData.map((row, rowIndex) => (
-                            <tr key={rowIndex} className="border-t hover:bg-gray-50 hover:bg-gray-300 dark:hover:bg-black">
-                                {columns.map((col, colIndex) => (
-                                    <td key={colIndex} className="px-4 py-2">
-                                        {renderCell
-                                            ? renderCell(col.key, row[col.key], row, rowIndex)
-                                            : row[col.key]}
-                                    </td>
-                                ))}
+                        {data.length === 0 ? (
+                            <tr>
+                                <td colSpan={columns.length} className="text-center py-4 text-gray-500">
+                                    No data found.
+                                </td>
                             </tr>
-                        ))
-                    )}
+                        ) : (
+                            sortedData.map((row, rowIndex) => (
+                                <tr key={rowIndex} className="border-t hover:bg-gray-50 hover:bg-gray-300 dark:hover:bg-black">
+                                    {columns.map((col, colIndex) => (
+                                        <td key={colIndex} className="px-4 py-2">
+                                            {renderCell
+                                                ? renderCell(col.key, row[col.key], row, rowIndex)
+                                                : row[col.key]}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
                     </tbody>
                 </table>
             </div>
@@ -186,11 +189,10 @@ function Table<T extends Record<string, any>>({
                             <button
                                 key={page}
                                 onClick={() => onPageChange(page)}
-                                className={`px-3 py-1 rounded ${
-                                    currentPage === page
+                                className={`px-3 py-1 rounded ${currentPage === page
                                         ? 'bg-blue-500 text-white'
                                         : 'bg-gray-200 hover:bg-gray-300 dark:bg-white dark:text-black'
-                                }`}
+                                    }`}
                             >
                                 {page}
                             </button>
