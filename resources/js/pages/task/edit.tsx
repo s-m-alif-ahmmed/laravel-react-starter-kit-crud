@@ -15,10 +15,12 @@ import { Label } from '@/components/ui/label';
 import { FormEventHandler, useRef, useState } from 'react';
 import { type Task } from '@/types';
 import { toast } from 'sonner';
+import ImageUpload from '@/components/ImageUpload';
 
 type EditTaskForm = {
     name: string;
-    image: File | null;
+    image: File | string | null;
+    images: File[] | string[] | null;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -30,10 +32,11 @@ export default function Edit({ task }: { task: Task }) {
 
     const [data, setData] = useState<EditTaskForm>({
         name: task.name ?? '',
-        image: null,
+        image: task.image ?? null,
+        images: null, // Note: You'll likely need to parse existing multiple images from `task` similar to `image` depending on your backend
     });
 
-    const [errors, setErrors] = useState<{ name?: string; image?: string }>({});
+    const [errors, setErrors] = useState<{ name?: string; image?: string; images?: string }>({});
     const [processing, setProcessing] = useState(false);
 
     const editTask: FormEventHandler = (e) => {
@@ -43,8 +46,17 @@ export default function Edit({ task }: { task: Task }) {
 
         const formData = new FormData();
         formData.append('name', data.name);
-        if (data.image) {
+
+        if (data.image instanceof File) {
             formData.append('image', data.image);
+        }
+
+        if (Array.isArray(data.images)) {
+            data.images.forEach((file) => {
+                if (file instanceof File) {
+                    formData.append('images[]', file);
+                }
+            });
         }
         formData.append('_method', 'PUT');
 
@@ -89,28 +101,29 @@ export default function Edit({ task }: { task: Task }) {
                                     <InputError message={errors.name} />
                                 </div>
 
-                                {task.image && (
-                                    <div className="flex flex-col space-y-1.5">
-                                        <Label>Current Image</Label>
-                                        <img
-                                            src={`/${task.image}`}
-                                            alt="Task"
-                                            className="w-32 h-auto rounded-md border"
-                                        />
-                                    </div>
-                                )}
-
-                                <div className="flex flex-col space-y-1.5">
-                                    <Label htmlFor="image">Change Image</Label>
-                                    <Input
-                                        id="image"
-                                        type="file"
-                                        onChange={(e) =>
-                                            setData({ ...data, image: e.target.files?.[0] ?? null })
+                                <div className="flex flex-col space-y-1.5 mt-4">
+                                    <Label className="mb-2" htmlFor="image">Image</Label>
+                                    <ImageUpload
+                                        value={data.image}
+                                        onChange={(file) =>
+                                            setData({ ...data, image: file as File | null })
                                         }
-                                        disabled={processing}
+                                        className=""
                                     />
                                     <InputError message={errors.image} />
+                                </div>
+
+                                <div className="flex flex-col space-y-1.5 mt-4">
+                                    <Label className="mb-2" htmlFor="images">Additional Images (Multiple)</Label>
+                                    <ImageUpload
+                                        multiple
+                                        value={data.images}
+                                        onChange={(files) =>
+                                            setData({ ...data, images: files as File[] | null })
+                                        }
+                                        className=""
+                                    />
+                                    <InputError message={errors.images} />
                                 </div>
                             </div>
                         </CardContent>

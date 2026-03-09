@@ -13,10 +13,12 @@ import InputError from '@/components/input-error';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { FormEventHandler, useRef } from 'react';
+import ImageUpload from '@/components/ImageUpload';
 
 type CreateTaskForm = {
     name: string;
     image: File | null;
+    images: File[] | null;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -32,6 +34,7 @@ export default function Create() {
     const { data, setData, errors, post, reset, processing } = useForm<CreateTaskForm>({
         name: '',
         image: null,
+        images: null,
     });
 
     const createTask: FormEventHandler = (e) => {
@@ -79,14 +82,23 @@ export default function Create() {
                                     <InputError message={errors.name} />
                                 </div>
                                 <div className="flex flex-col space-y-1.5">
-                                    <Label htmlFor="image">Image</Label>
-                                    <Input
-                                        id="image"
-                                        type="file"
-                                        onChange={(e) => setData('image', e.target.files?.[0] ?? null)}
-                                        disabled={processing}
+                                    <Label htmlFor="image" className="mb-2">Image</Label>
+                                    <ImageUpload
+                                        value={data.image}
+                                        onChange={(file) => setData('image', file as File | null)}
+                                        className="h-[250px] w-full"
                                     />
                                     <InputError message={errors.image} />
+                                </div>
+                                <div className="flex flex-col space-y-1.5 mt-4">
+                                    <Label htmlFor="images" className="mb-2"><>Additional Images (Multiple)</L</>abel>
+                                    <ImageUpload
+                                        multiple
+                                        value={data.images}
+                                        onChange={(files) => setData('images', files as File[] | null)}
+                                        className="w-full"
+                                    />
+                                    <InputError message={errors.images} />
                                 </div>
                             </div>
                         </CardContent>
