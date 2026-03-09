@@ -106,7 +106,7 @@ export default function ImageUpload({
             <div
                 className={`relative border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-colors overflow-hidden w-full h-full
                     ${isDragging ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50 hover:bg-muted/50'}
-                    ${previews.length > 0 && !multiple ? 'p-2' : 'p-8'}
+                    ${previews.length > 0 && !multiple ? 'p-2' : 'p-2'}
                 `}
                 onDragOver={onDragOver}
                 onDragLeave={onDragLeave}
@@ -131,9 +131,9 @@ export default function ImageUpload({
                         </p>
                     </div>
                 ) : (
-                    <div className={`grid gap-4 w-full h-full ${multiple ? 'grid-cols-2 md:grid-cols-3' : 'grid-cols-1'}`}>
+                    <div className={`grid gap-4 w-full h-full ${multiple ? 'grid-cols-2 md:grid-cols-5' : 'grid-cols-1'}`}>
                         {previews.map((preview, index) => (
-                            <div key={index} className={`relative group rounded-md overflow-hidden bg-muted flex items-center justify-center ${multiple ? 'aspect-video' : 'w-full h-full'}`}>
+                            <div key={index} className={`relative group rounded-md overflow-hidden bg-muted flex items-center justify-center ${multiple ? ' max-h-[180px]' : 'w-full h-full'}`}>
                                 <img
                                     src={preview}
                                     alt="Preview"
@@ -155,7 +155,7 @@ export default function ImageUpload({
                         ))}
 
                         {multiple && (
-                            <div className="flex flex-col items-center justify-center space-y-2 py-2 border-2 border-dashed border-border rounded-md hover:border-primary/50 hover:bg-muted/50 aspect-video">
+                            <div className="flex flex-col items-center justify-center space-y-2 py-2 border-2 border-dashed border-border rounded-md hover:border-primary/50 hover:bg-muted/50 max-h-[180px]">
                                 <UploadCloud className="w-6 h-6 text-muted-foreground" />
                                 <p className="text-xs text-muted-foreground">Add more</p>
                             </div>
