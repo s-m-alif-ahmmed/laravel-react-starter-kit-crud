@@ -11,23 +11,10 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $search = $request->string('search');
-        $perPage = $request->integer('per_page', 10);
-
-        $query = Task::query();
-
-        if ($search) {
-            $query->where('name', 'like', "%{$search}%");
-        }
-
-        $tasks = $query->paginate($perPage)->appends($request->query());
+        $tasks = Task::searchAndPaginate(['name']);
 
         return Inertia::render('task/index', [
             'tasks' => $tasks,
-            'filters' => [
-                'search' => $search,
-                'per_page' => $perPage,
-            ],
         ]);
     }
 

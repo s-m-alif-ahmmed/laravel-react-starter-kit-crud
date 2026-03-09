@@ -66,7 +66,7 @@ export default function Edit({ task }: { task: Task }) {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task Edit" />
             <div className="m-5">
-                <Link className={buttonVariants({ variant: 'default' })} href={route('task.index')}>
+                <Link className={buttonVariants({ variant: 'default', className: 'mb-2' })} href={route('task.index')}>
                     Task List
                 </Link>
                 <Card>

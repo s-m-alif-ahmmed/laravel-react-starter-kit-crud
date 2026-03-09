@@ -55,7 +55,7 @@ export default function Create() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Task Create" />
             <div className="m-5">
-                <Link className={(buttonVariants({ variant: 'default' }))} href={route('task.index')}>
+                <Link className={(buttonVariants({ variant: 'default', className: 'mb-2' }))} href={route('task.index')}>
                     Task List
                 </Link>
 
